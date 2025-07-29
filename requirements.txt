@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+pydantic
+pandas
+openpyxl
+langgraph
+langchain-core
+langchain-mistralai
+streamlit
+typing_extensions
+python-dotenv
