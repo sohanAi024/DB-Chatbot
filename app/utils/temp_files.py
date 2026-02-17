@@ -1,12 +1,12 @@
 import os
-from typing import Dict
+from typing import Dict, Union
 
 temp_files: Dict[str, str] = {}
 
 def add_temp_file(file_id: str, file_path: str):
     temp_files[file_id] = file_path
 
-def get_temp_file_path(file_id: str) -> str | None:
+def get_temp_file_path(file_id: str) -> Union[str, None]:
     return temp_files.get(file_id)
 
 def remove_temp_file(file_id: str):

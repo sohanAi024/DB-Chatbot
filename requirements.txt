@@ -10,3 +10,8 @@ langchain-mistralai
 streamlit
 typing_extensions
 python-dotenv
+passlib[bcrypt]
+PyJWT
+langgraph-checkpoint-postgres
+psycopg[binary]
+psycopg-pool

@@ -1,10 +1,20 @@
+import uvicorn
+import os
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.agents.routers import users, chat
-from app.database import engine, SessionLocal
-from app.models import Base, User
-from app.utils.temp_files import cleanup_all_temp_files # Import cleanup function
-from datetime import datetime
+from app.database import engine
+from app.models.base import Base
+# Import all models to ensure they are registered with Base.metadata
+from app.models import user, conversation 
+from app.routers import auth, conversations, data, chat
+from app.utils.temp_files import cleanup_all_temp_files
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Ensure tables are created on startup
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="User Management API with LangGraph Agent")
 
@@ -17,27 +27,20 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(chat.router, prefix="/api") # You might want to add a prefix
-app.include_router(users.router, prefix="/api")
+app.include_router(auth.router)
+app.include_router(conversations.router)
+app.include_router(data.router)
+app.include_router(chat.router)
 
 @app.on_event("startup")
 def startup():
     Base.metadata.create_all(bind=engine)
-    db = SessionLocal()
-    try:
-        # Seed initial data if the users table is empty
-        if db.query(User).count() == 0:
-            db.add_all([
-                User(name="John Doe", email="john@example.com", phone="555-0123", address="New York", salary=50000),
-                User(name="Jane Smith", email="jane@example.com", phone="555-0124", address="California", salary=60000),
-                User(name="Mehul Shah", email="mehul@example.com", phone="555-0125", address="Gujarat", salary=55000),
-            ])
-            db.commit()
-    except Exception as e:
-        print(f"Error during startup DB seeding: {e}")
-    finally:
-        db.close()
 
 @app.on_event("shutdown")
 def shutdown_event():
     cleanup_all_temp_files()
+
+if __name__ == "__main__":
+    host = os.getenv("APP_HOST", "0.0.0.0")
+    port = int(os.getenv("APP_PORT", 8000))
+    uvicorn.run(app, host=host, port=port)
